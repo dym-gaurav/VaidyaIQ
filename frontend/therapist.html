@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind & Therapy — VaidyaIQ</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        #chat-window {
+            max-width: 720px;
+            margin: 0 auto;
+            width: 100%;
+            align-self: center;
+        }
+
+        .chat-input-area {
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .chat-input-row {
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .app-layout {
+            transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body { padding-bottom: 0; overflow: hidden; }
+
+        .app-layout {
+            display: flex;
+            height: calc(100dvh - 60px);
+            width: 100vw;
+            margin-top: 60px;
+        }
+
+        .chat-sidebar {
+            width: 260px;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: transform var(--transition);
+        }
+
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                position: fixed;
+                left: 0;
+                top: 60px;
+                bottom: 0;
+                z-index: 50;
+                transform: translateX(-100%);
+            }
+            .chat-sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all var(--transition);
+        }
+
+        .new-chat-btn:hover {
+            background: var(--surface3);
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .chat-list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 14px;
+            transition: all var(--transition);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-list-item:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+        
+        .chat-list-item.active {
+            background: var(--surface3);
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .therapy-shell {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .therapy-header {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 16px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle { display: block; }
+        }
+
+        .therapist-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .therapist-avatar {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: var(--purple-dim);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .therapist-avatar svg {
+            width: 22px; height: 22px;
+            stroke: var(--purple);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .therapist-info h2 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+        .therapist-info p {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 1px;
+        }
+
+        .online-badge {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .online-dot {
+            width: 7px; height: 7px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: onlinePulse 2.5s ease-in-out infinite;
+        }
+        @keyframes onlinePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.24); }
+            50% { box-shadow: 0 0 0 5px rgba(255,255,255,0); }
+        }
+
+        .crisis-banner {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .crisis-banner p {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        .crisis-banner a {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--purple);
+            text-decoration: none;
+            white-space: nowrap;
+            padding: 5px 12px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            transition: all var(--transition);
+            min-height: 32px;
+            display: flex; align-items: center;
+        }
+        .crisis-banner a:hover { background: var(--purple-dim); }
+
+        #chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            scroll-behavior: smooth;
+        }
+        #chat-window::-webkit-scrollbar { width: 3px; }
+        #chat-window::-webkit-scrollbar-thumb { background: var(--surface3); }
+
+        .mood-bar {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            background: var(--bg2);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .mood-bar label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .mood-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all var(--transition);
+            min-height: 32px;
+            min-width: 36px;
+        }
+        .mood-btn:hover { background: var(--surface3); border-color: var(--border-hover); transform: scale(1.1); }
+        .mood-btn.selected { border-color: var(--purple); background: var(--purple-dim); }
+
+        .chat-input-area {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 10px 12px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            flex-shrink: 0;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input-row input {
+            flex: 1;
+            padding: 0 16px !important;
+            height: 48px;
+            font-size: 15px !important;
+        }
+
+        .voice-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 12, 15, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .voice-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .voice-orb-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .voice-orb {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #b8b8b8);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255,255,255,0.18);
+            transition: all 0.2s ease;
+        }
+
+        .voice-orb.listening {
+            animation: breathe 1.5s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(0.95); box-shadow: 0 0 20px rgba(255,255,255,0.16); }
+            100% { transform: scale(1.15); box-shadow: 0 0 60px rgba(255,255,255,0.48); }
+        }
+
+        .voice-status {
+            margin-top: 40px;
+            font-size: 18px;
+            color: var(--text);
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .voice-close-btn {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .voice-gender-toggle {
+            position: absolute;
+            bottom: 60px;
+            display: flex;
+            background: var(--surface2);
+            border-radius: 20px;
+            padding: 4px;
+        }
+
+        .voice-gender-toggle button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .voice-gender-toggle button.active {
+            background: var(--surface3);
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <button class="hamburger-btn" onclick="toggleHamburger()" aria-label="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+
+    <aside class="hamburger-sidebar" id="hamburger-sidebar" style="background: #080808 !important; backdrop-filter: none !important;">
+        <a href="chat-doctor.html">Doctor</a>
+        <a href="prescription.html">Prescription</a>
+        <a href="therapist.html">Therapy</a>
+        <hr class="sidebar-divider">
+        <div class="sidebar-section-title">Chats</div>
+        <div id="hamburger-chat-list"></div>
+    </aside>
+
+    <a href="index.html" class="logo" aria-label="VaidyaIQ home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        VaidyaIQ
+    </a>
+
+    <div class="lang-select-wrap">
+        <select onchange="setLanguage(this.value)" aria-label="Select language">
+            <option value="english">English</option>
+            <option value="hindi">हिन्दी</option>
+            <option value="hinglish">Hinglish</option>
+            <option value="bengali">বাংলা</option>
+            <option value="marathi">मराठी</option>
+            <option value="telugu">తెలుగు</option>
+            <option value="tamil">தமிழ்</option>
+        </select>
+    </div>
+</nav>
+
+<div class="app-layout">
+    <aside class="chat-sidebar" id="chat-sidebar">
+        <div class="sidebar-header">
+            <button class="new-chat-btn" onclick="startNewChat()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                New Chat
+            </button>
+        </div>
+        <div class="chat-list" id="chat-list"></div>
+    </aside>
+
+    <main class="therapy-shell">
+        <div style="padding: 10px 14px; border-bottom: 1px solid var(--border); display:flex; align-items:center; gap:10px; background: var(--bg2); flex-shrink:0;">
+            <span style="font-size:13px; color:var(--text-dim);">Mind & Therapy</span>
+            <div style="margin-left:auto; display:flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--primary);">
+                <span style="width:7px; height:7px; background:var(--primary); border-radius:50%; display:inline-block;"></span>
+                Online
+            </div>
+        </div>
+
+        <div id="chat-window" role="log" aria-label="Therapy conversation" aria-live="polite">
+            <div class="chat-bubble-ai slide-up">
+                Hello, I'm glad you're here. 🌿 This is a safe, private space. What's been on your mind lately? You can share anything — feelings, situations, or something that's been bothering you.
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="chat-input-row">
+                <button class="mic-btn" id="mic-btn" onclick="openVoiceModal()" aria-label="Toggle voice input" title="Voice input">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </button>
+                <input type="text" id="chat-input" placeholder="Share what's on your mind..." aria-label="Type your thoughts here" onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }" autocomplete="off" inputmode="text">
+                <button class="send-btn" onclick="sendMessage()" style="background: var(--purple); min-width: 72px;" aria-label="Send message">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    Send
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="voice-modal" id="voice-modal">
+    <button class="voice-close-btn" onclick="closeVoiceModal()">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <div class="voice-orb-container" onclick="toggleVoiceListening()">
+        <div class="voice-orb listening" id="voice-orb"></div>
+    </div>
+    <div class="voice-status" id="voice-status">Listening...</div>
+    <div class="voice-gender-toggle">
+        <button id="voice-btn-female" class="active" onclick="changeVoiceGender('female')">Female</button>
+        <button id="voice-btn-male" onclick="changeVoiceGender('male')">Male</button>
+    </div>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('chat-sidebar').classList.toggle('open');
+}
+
+function toggleHamburger() {
+    const sidebar = document.getElementById('hamburger-sidebar');
+    const body = document.body;
+
+    sidebar.classList.toggle('open');
+    body.classList.toggle('hamburger-open');
+
+    const sharedSidebar = document.getElementById('shared-chat-sidebar');
+    if (sharedSidebar && sharedSidebar.classList.contains('open')) {
+        sharedSidebar.classList.remove('open');
+    }
+
+    if (window.innerWidth <= 768) {
+        if (sidebar.classList.contains('open')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('hamburger-sidebar');
+    const btn = document.querySelector('.hamburger-btn');
+    const sharedSidebar = document.getElementById('shared-chat-sidebar');
+
+    if (sidebar && sidebar.classList.contains('open') &&
+        !sidebar.contains(e.target) &&
+        !btn.contains(e.target) &&
+        (!sharedSidebar || !sharedSidebar.contains(e.target))) {
+        sidebar.classList.remove('open');
+        document.body.classList.remove('hamburger-open');
+        document.body.style.overflow = '';
+    }
+});
+
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        const sidebar = document.getElementById('hamburger-sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+            document.body.style.overflow = '';
+        }
+    }
+});
+</script>
+<script src="js/language.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/api.js"></script>
+<script src="js/shared-history.js"></script>
+<script src="js/therapist.js"></script>
+</body>
+</html>

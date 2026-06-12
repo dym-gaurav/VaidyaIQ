@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Reader — VaidyaIQ</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        
+.container {
+    transition: margin-right var(--transition);
+    max-width: 720px;
+}
+        /* ── DROP ZONE ─────────────────────────────────── */
+        .drop-zone {
+            border: 1.5px dashed var(--border-hover);
+            border-radius: var(--radius);
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--surface);
+            position: relative;
+        }
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--primary);
+            background: var(--surface2);
+        }
+        .drop-zone:active { transform: scale(0.995); }
+
+        .drop-icon {
+            width: 52px; height: 52px;
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px;
+        }
+        .drop-icon svg {
+            width: 26px; height: 26px;
+            stroke: var(--primary);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .drop-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+        .drop-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .drop-sub span {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* Format pills */
+        .format-pills {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 14px;
+        }
+        .format-pill {
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+        }
+
+        /* ── PREVIEW IMAGE ─────────────────────────────── */
+        #preview-wrap {
+            display: none;
+            position: relative;
+            margin-bottom: 14px;
+        }
+        #preview {
+            width: 100%;
+            border-radius: var(--radius-sm);
+            max-height: 220px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            display: block;
+        }
+        .preview-change {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: rgba(8,12,15,0.75);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-dim);
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all var(--transition);
+        }
+        .preview-change:hover { color: var(--text); border-color: var(--border-hover); }
+
+        /* ── NOTE INPUT ─────────────────────────────────── */
+        .note-wrap {
+            margin-bottom: 14px;
+        }
+        .note-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            letter-spacing: 0.2px;
+        }
+        #user-note {
+            width: 100%;
+            padding: 12px 14px !important;
+            font-size: 14px !important;
+            resize: none;
+        }
+
+        /* ── PAGE HEADER ─────────────────────────────────── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-top: 4px;
+        }
+        .page-header-icon {
+            width: 44px; height: 44px;
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .page-header-icon svg {
+            width: 22px; height: 22px;
+            stroke: var(--blue);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .page-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+        .page-header p {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* ── LOADING STATE ─────────────────────────────── */
+        #loading-section {
+            display: none;
+            text-align: center;
+            padding: 52px 20px;
+        }
+        .loading-ring {
+            width: 48px; height: 48px;
+            border: 2.5px solid var(--surface3);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        .loading-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .loading-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .loading-steps {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 16px;
+        }
+        .loading-step {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--surface3);
+            transition: background 0.3s;
+        }
+        .loading-step.active { background: var(--blue); }
+
+        /* ── RESULTS ─────────────────────────────────────── */
+        #results-section { display: none; }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .results-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        /* ── ROUTINE TABLE ─────────────────────────────── */
+        .routine-table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        #routine-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 360px;
+        }
+        #routine-table thead tr {
+            background: var(--surface3);
+            border-bottom: 1px solid var(--border);
+        }
+        #routine-table th {
+            padding: 11px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+        #routine-table td {
+            padding: 11px 14px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            line-height: 1.5;
+        }
+        #routine-table tr:last-child td { border-bottom: none; }
+        #routine-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        #routine-table td:first-child { color: var(--text); font-weight: 500; }
+
+        /* ── SECTION TITLES ─────────────────────────────── */
+        .section-hdr {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .section-hdr-icon {
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .section-hdr-icon svg {
+            width: 14px; height: 14px;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .section-hdr-icon.blue { background: var(--blue-dim); }
+        .section-hdr-icon.blue svg { stroke: var(--blue); }
+        .section-hdr-icon.green { background: var(--primary-dim); }
+        .section-hdr-icon.green svg { stroke: var(--primary); }
+        .section-hdr h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Upload again button */
+        .upload-again-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            width: 100%;
+            font-family: inherit;
+            margin-top: 4px;
+        }
+        .upload-again-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <button class="hamburger-btn" onclick="toggleHamburger()" aria-label="Menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+    </button>
+
+    <!-- Hamburger sidebar -->
+    <aside class="hamburger-sidebar" id="hamburger-sidebar" style="background: #080808 !important; backdrop-filter: none !important;">
+        <a href="chat-doctor.html">Doctor</a>
+        <a href="prescription.html">Prescription</a>
+        <a href="therapist.html">Therapy</a>
+        <hr class="sidebar-divider">
+        <div class="sidebar-section-title">Chats</div>
+        <div id="hamburger-chat-list"></div>
+    </aside>
+    <a href="index.html" class="logo" aria-label="VaidyaIQ home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        VaidyaIQ
+    </a>
+    
+    <div class="lang-select-wrap">
+        <select onchange="setLanguage(this.value)" aria-label="Select language">
+            <option value="english">English</option>
+            <option value="hindi">हिन्दी</option>
+            <option value="hinglish">Hinglish</option>
+            <option value="bengali">বাংলা</option>
+            <option value="marathi">मराठी</option>
+            <option value="telugu">తెలుగు</option>
+            <option value="tamil">தமிழ்</option>
+        </select>
+    </div>
+</nav>
+<main class="container">
+
+    <!-- Page header -->
+    <div class="page-header fade-in">
+        <div class="page-header-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+        </div>
+        <div>
+            <h1>Prescription Reader</h1>
+            <p>Upload a photo to understand your medicines</p>
+        </div>
+    </div>
+
+    <!-- Upload section -->
+    <div id="upload-section" class="card fade-in" style="padding: 20px;">
+
+        <!-- Preview (hidden until file chosen) -->
+        <div id="preview-wrap">
+            <img id="preview" alt="Uploaded prescription preview">
+            <button class="preview-change" onclick="document.getElementById('file-input').click()" aria-label="Change image">
+                Change image
+            </button>
+        </div>
+
+        <!-- Drop zone -->
+        <div
+            class="drop-zone"
+            id="drop-zone"
+            onclick="document.getElementById('file-input').click()"
+            ondragover="event.preventDefault(); this.classList.add('dragover')"
+            ondragleave="this.classList.remove('dragover')"
+            ondrop="handleDrop(event)"
+            role="button"
+            tabindex="0"
+            aria-label="Upload prescription image. Click or drag and drop."
+            onkeydown="if(event.key==='Enter'||event.key===' ') document.getElementById('file-input').click()"
+        >
+            <div class="drop-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <p class="drop-title">Upload prescription</p>
+            <p class="drop-sub"><span>Click to browse</span> or drag &amp; drop</p>
+            <div class="format-pills" aria-label="Supported formats">
+                <span class="format-pill">JPG</span>
+                <span class="format-pill">PNG</span>
+                <span class="format-pill">WEBP</span>
+            </div>
+        </div>
+
+        <input
+            type="file"
+            id="file-input"
+            accept="image/*"
+            capture="environment"
+            style="display:none"
+            onchange="handleFile(this.files[0])"
+            aria-label="Select prescription image file"
+        >
+
+        <!-- Optional note -->
+        <div class="note-wrap" style="margin-top: 14px;">
+            <label class="note-label" for="user-note">Additional context (optional)</label>
+            <input
+                type="text"
+                id="user-note"
+                placeholder="e.g. I have fever and cough since 3 days"
+                autocomplete="off"
+            >
+        </div>
+
+        <button class="btn-primary" onclick="submitPrescription()" id="read-btn" aria-label="Read prescription">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyse Prescription
+        </button>
+
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading-section" aria-live="polite" aria-label="Loading results">
+        <div class="loading-ring" aria-hidden="true"></div>
+        <p class="loading-text">Reading your prescription…</p>
+        <p class="loading-sub">This usually takes 5–10 seconds</p>
+        <div class="loading-steps" aria-hidden="true">
+            <div class="loading-step active"></div>
+            <div class="loading-step"></div>
+            <div class="loading-step"></div>
+            <div class="loading-step"></div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-section" class="fade-in" aria-live="polite">
+
+        <!-- Mismatch warning -->
+        <div id="mismatch-section" class="warning-banner" style="display:none;" role="alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0; margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div>
+                <strong style="color:var(--orange);">Note: </strong>
+                <span id="mismatch-text"></span>
+            </div>
+        </div>
+
+        <!-- Medicines list -->
+        <div class="card" style="padding:20px; margin-bottom:14px;">
+            <div class="section-hdr">
+                <div class="section-hdr-icon blue" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+                </div>
+                <h3>Your Medicines</h3>
+            </div>
+            <div id="medicines-list"></div>
+        </div>
+
+        <!-- Routine table -->
+        <div class="card" style="padding:20px; margin-bottom:14px;">
+            <div class="section-hdr" style="margin-bottom:14px;">
+                <div class="section-hdr-icon green" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <h3>Medicine Routine</h3>
+            </div>
+            <div class="routine-table-wrap">
+                <table id="routine-table" role="table" aria-label="Medicine schedule">
+                    <thead>
+                        <tr>
+                            <th scope="col">Medicine</th>
+                            <th scope="col">Times/Day</th>
+                            <th scope="col">Schedule</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routine-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Upload another -->
+        <button class="upload-again-btn" onclick="location.reload()" aria-label="Upload another prescription">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Another Prescription
+        </button>
+
+    </div>
+
+</main>
+
+
+<script>
+/* Drop handler shim — actual logic in prescription.js */
+function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+}
+function toggleHamburger() {
+    document.getElementById('hamburger-sidebar').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('hamburger-sidebar');
+    const btn = document.querySelector('.hamburger-btn');
+    if (sidebar && !sidebar.contains(e.target) && !btn.contains(e.target)) {
+        sidebar.classList.remove('open');
+    }
+});
+</script>
+<script src="js/language.js"></script>
+<script src="js/api.js"></script>
+<script src="js/shared-history.js"></script>
+<script src="js/prescription.js"></script>
+</body>
+</html>

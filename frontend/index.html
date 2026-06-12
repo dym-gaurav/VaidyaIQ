@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaidyaIQ — Health Assistant</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        
+        /* Hero accent glow */
+        .hero-glow {
+            position: absolute;
+            top: -60px; left: 50%; transform: translateX(-50%);
+            width: 340px; height: 200px;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 52px 0 36px;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-dim);
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-bottom: 20px;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.8); }
+        }
+
+        h1.hero-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+        }
+        h1.hero-title span { color: var(--primary); }
+
+        .hero-sub {
+            color: var(--text-dim);
+            font-size: 15px;
+            max-width: 400px;
+            margin: 0 auto 8px;
+            line-height: 1.65;
+        }
+
+        /* Feature cards grid */
+        .features-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .feature-card {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+        .feature-card.teal::after   { background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 60%); }
+        .feature-card.blue::after   { background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 60%); }
+        .feature-card.purple::after { background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 60%); }
+
+        .feature-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+        .feature-card:hover::after { opacity: 1; }
+        .feature-card.teal:hover   { border-color: var(--border-hover); }
+        .feature-card.blue:hover   { border-color: var(--border-hover); }
+        .feature-card.purple:hover { border-color: var(--border-hover); }
+
+        .feature-card:active { transform: translateY(0) scale(0.99); }
+
+        .feature-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .feature-icon svg {
+            width: 26px; height: 26px;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .feature-icon.teal   { background: var(--surface3); }
+        .feature-icon.teal svg   { stroke: var(--primary); }
+        .feature-icon.blue   { background: var(--surface3); }
+        .feature-icon.blue svg   { stroke: var(--blue); }
+        .feature-icon.purple { background: var(--surface3); }
+        .feature-icon.purple svg { stroke: var(--purple); }
+
+        .feature-info h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            letter-spacing: -0.2px;
+        }
+        .feature-info p {
+            color: var(--text-dim);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+        .feature-card.teal  .feature-info h2 { color: var(--primary); }
+        .feature-card.blue  .feature-info h2 { color: var(--blue); }
+        .feature-card.purple .feature-info h2 { color: var(--purple); }
+
+        .feature-arrow {
+            margin-left: auto;
+            flex-shrink: 0;
+            opacity: 0.3;
+            transition: opacity var(--transition), transform var(--transition);
+        }
+        .feature-card:hover .feature-arrow {
+            opacity: 0.8;
+            transform: translateX(3px);
+        }
+        .feature-arrow svg {
+            width: 18px; height: 18px;
+            stroke: var(--text);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            margin-top: 24px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.6;
+        }
+        .disclaimer strong { color: var(--text-dim); }
+
+        /* Stats bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+        .stat-item {
+            background: var(--surface);
+            padding: 14px;
+            text-align: center;
+        }
+        .stat-item .stat-num {
+            display: block;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+        .stat-item .stat-lbl {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            letter-spacing: 0.2px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <button class="hamburger-btn" onclick="toggleHamburger()" aria-label="Menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+    </button>
+
+    <!-- Hamburger sidebar -->
+    <aside class="hamburger-sidebar" id="hamburger-sidebar">
+        <a href="chat-doctor.html">Doctor</a>
+        <a href="prescription.html">Prescription</a>
+        <a href="therapist.html">Therapy</a>
+        <hr class="sidebar-divider">
+        <div class="sidebar-section-title">Chats</div>
+        <div id="hamburger-chat-list"></div>
+    </aside>
+    <a href="index.html" class="logo" aria-label="VaidyaIQ home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        VaidyaIQ
+    </a>
+    
+    <div class="lang-select-wrap">
+        <select onchange="setLanguage(this.value)" aria-label="Select language">
+            <option value="english">English</option>
+            <option value="hindi">हिन्दी</option>
+            <option value="hinglish">Hinglish</option>
+            <option value="bengali">বাংলা</option>
+            <option value="marathi">मराठी</option>
+            <option value="telugu">తెలుగు</option>
+            <option value="tamil">தமிழ்</option>
+        </select>
+    </div>
+</nav>
+
+<main class="container">
+
+    <!-- Hero -->
+    <div class="hero fade-in">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="hero-badge" aria-label="Free, AI-powered, available 24/7">Free · AI-Powered · 24/7</div>
+        <h1 class="hero-title">
+            Understand Your Health.<br>
+            <span>Never Be Misled Again.</span>
+        </h1>
+        <p class="hero-sub">
+            Trusted health guidance for every Indian family — no doctor fees, no waiting.
+        </p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar fade-in stagger" role="list">
+        <div class="stat-item" role="listitem">
+            <span class="stat-num">7+</span>
+            <span class="stat-lbl">Languages</span>
+        </div>
+        <div class="stat-item" role="listitem">
+            <span class="stat-num">Free</span>
+            <span class="stat-lbl">No Credit Card</span>
+        </div>
+        <div class="stat-item" role="listitem">
+            <span class="stat-num">24/7</span>
+            <span class="stat-lbl">Available</span>
+        </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <nav class="features-grid stagger" aria-label="App features">
+
+        <a href="chat-doctor.html" class="feature-card teal slide-up" aria-label="Chat Doctor - describe symptoms">
+            <div class="feature-icon teal" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h3m-3-8h3"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+            </div>
+            <div class="feature-info">
+                <h2>Chat Doctor</h2>
+                <p>Describe symptoms. Get possible causes and what to watch for — in plain language.</p>
+            </div>
+            <div class="feature-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+        </a>
+
+        <a href="prescription.html" class="feature-card blue slide-up" aria-label="Prescription Reader - understand your medicines">
+            <div class="feature-icon blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+            </div>
+            <div class="feature-info">
+                <h2>Prescription Reader</h2>
+                <p>Upload a prescription photo. Understand every medicine, dosage, and timing.</p>
+            </div>
+            <div class="feature-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+        </a>
+
+        <a href="therapist.html" class="feature-card purple slide-up" aria-label="Mind and Therapy - talk to an AI therapist">
+            <div class="feature-icon purple" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </div>
+            <div class="feature-info">
+                <h2>Mind &amp; Therapy</h2>
+                <p>Talk to an empathetic AI therapist. Understand your feelings and find a way forward.</p>
+            </div>
+            <div class="feature-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+        </a>
+
+    </nav>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer fade-in" role="note">
+        <strong>Medical Disclaimer</strong> — VaidyaIQ is for informational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.
+    </div>
+
+</main>
+
+
+<script src="js/language.js"></script>
+<script src="js/shared-history.js"></script>
+</body>
+</html>
